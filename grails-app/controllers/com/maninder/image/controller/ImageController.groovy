@@ -13,7 +13,6 @@ class ImageController {
         def yCoordinate = params.y as Long
         def height = params.height as Long
         def width = params.width as Long
-        def imageAsDataUrl = params.dataurl as boolean
         def cropParameter = [:] as Map
         def image
         def result = [:] as Map
@@ -23,23 +22,34 @@ class ImageController {
             cropParameter.put("y",yCoordinate)
             cropParameter.put("width",width)
             cropParameter.put("height",height)
-            image = imageService.crop(fileUrl,cropParameter,imageAsDataUrl)
+            image = imageService.crop(fileUrl,cropParameter)
             result.put('image',image)
             response.status = 200
-            render result as JSON
         }catch(IOException io){
             response.status = 500
             result.put('message',io.getMessage())
-            render result as JSON
         }catch(Exception ex){
             response.status = 500
             result.put('message','Error occur while image')
+        }finally{
             render result as JSON
         }
     }
 
     def thumbnailImage(){
         def result = [:] as Map
+        def fileUrl = params.url as String
+        def height = params.height as Long
+        def width = params.width as Long
+        def image
+        try {
+            image = imageService.thumbnail(fileUrl,height,width)
+            result.put('image',image)
+            response.status = 200
+        }catch(Exception ex){
+            result.put('message','Error occur while generating thumbnail')
+            response.status = 500
+        }
         render result as JSON
     }
 }

@@ -1,26 +1,29 @@
 package com.maninder.image.service
 
-import grails.transaction.Transactional
 import sun.misc.BASE64Encoder
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
-import java.net.URL
 
 class ImageService {
 
-    def fileService
+    private static final String BASE64_ENCODED = 'data:image/png;base64,'
 
-    def String crop(def imageUrl,def cropParameter,def imageAsDataUrl = false) throws IOException,Exception{
-        def imageData = getImage(imageUrl)
+    def String crop(def imageUrl,def cropParameter) throws IOException,Exception{
+        def imageData = getImageByUrl(imageUrl)
         imageData = cropImage(imageData,cropParameter)
-        imageAsDataUrl ? getImageDataUrl(imageData) : saveImageOnServer(imageData)
+        getImageDataUrl(imageData)
+    }
+
+    def thumbnail(def imageUrl,def height,def width){
+        def imageData = getImageByUrl(imageUrl)
+        imageData = thumbnailImage(imageData,height,width)
     }
 
     private String getImageDataUrl(def imageData){
         def baos = new ByteArrayOutputStream()
         try {
             saveImage(imageData,baos)
-            getEncodedImage(baos.toByteArray())
+            BASE64_ENCODED + getEncodedImage(baos.toByteArray())
         }catch (IOException io){
             throw new IOException(io)
         }catch (Exception ex){
@@ -36,17 +39,6 @@ class ImageService {
     private String getEncodedImage(def imageData){
         def encoder = new BASE64Encoder()
         encoder.encode(imageData)
-    }
-
-    private String saveImageOnServer(def imageData) throws IOException,Exception{
-        def fileName
-
-        if (!fileService.isDirectoryExists()) {
-            fileService.createImageDirectory()
-        }
-        fileName = fileService.getNewFileName()
-        saveImage(imageData,new File(fileName))
-        fileName
     }
 
     private void saveImage(def imageData,def image){
@@ -101,7 +93,7 @@ class ImageService {
         }
     }
 
-    private BufferedImage getImage(def imageUrl){
+    private BufferedImage getImageByUrl(def imageUrl){
         def imageData = null
 
         try{
@@ -115,4 +107,18 @@ class ImageService {
             }
         }
     }
+
+    private BufferedImage thumbnailImage(def imageData,def height,def width){
+        def thumbnailHeight
+        def thumbnailWidth
+
+        try{
+
+        }catch(Exception ex){
+
+        }finally{
+
+        }
+    }
+
 }
