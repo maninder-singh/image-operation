@@ -1,10 +1,16 @@
 class UrlMappings {
 
 	static mappings = {
-        "/$controller/$action?/$id?(.$format)?"{
-            constraints {
-                // apply constraints here
-            }
+
+        "/images/crop"(controller: "image",parseRequest: true){
+            action = [
+                    GET: "cropImage"
+            ]
+        }
+        "/images/thumbnail"(controller: "image" , parseRequest: true){
+            action = [
+                    GET : "thumbnailImage"
+            ]
         }
 
         "/"(view:"/index")

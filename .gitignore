@@ -1,2 +1,4 @@
 .idea/
 image-operation.iml
+image-operation-grailsPlugins.iml
+target/
