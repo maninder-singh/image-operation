@@ -25,12 +25,12 @@ Returns a thumbnail version of original image.
    ```
    height=[Int] 
    Default value - one-tenth height of original image
-   Description - the one-tenth height of the original image
+   Description - height of thumbnai image
    ```
    ```
    width=[Int] 
    Default value - one-tenth width of original image
-   Description - the one-tenth width of the original image
+   Description - width of thumbnail image
    ```
 
 * **Data Params**
