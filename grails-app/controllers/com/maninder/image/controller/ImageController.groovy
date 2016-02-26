@@ -49,7 +49,9 @@ class ImageController {
         }catch(Exception ex){
             result.put('message','Error occur while generating thumbnail')
             response.status = 500
+        }finally{
+            render result as JSON
         }
-        render result as JSON
+
     }
 }
