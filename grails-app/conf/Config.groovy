@@ -115,3 +115,7 @@ log4j.main = {
            'org.hibernate',
            'net.sf.ehcache.hibernate'
 }
+
+// image-operation project configurations
+media.image.directory = "com/maninder/image"
+image.server.name = "http://localhost:8000"
