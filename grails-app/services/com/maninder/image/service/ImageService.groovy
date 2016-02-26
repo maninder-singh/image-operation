@@ -1,6 +1,5 @@
 package com.maninder.image.service
 
-import com.sun.org.apache.xerces.internal.impl.msg.XMLMessageFormatter_ja
 import sun.misc.BASE64Encoder
 import javax.imageio.ImageIO
 import java.awt.AlphaComposite

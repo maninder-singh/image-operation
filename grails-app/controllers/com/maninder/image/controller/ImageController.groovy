@@ -5,10 +5,11 @@ import grails.converters.JSON
 class ImageController {
 
     def imageService
+    def utilService
 
     def cropImage(){
 
-        def fileUrl = params.url as String
+        def imageUrl = params.url as String
         def xCoordinate = params.x as Long
         def yCoordinate = params.y as Long
         def height = params.height as Long
@@ -18,11 +19,15 @@ class ImageController {
         def result = [:] as Map
 
         try{
+            if(!utilService.isUrlValid(imageUrl)){
+                result.put("message","File url is not valid.Please check it.")
+                return
+            }
             cropParameter.put("x",xCoordinate)
             cropParameter.put("y",yCoordinate)
             cropParameter.put("width",width)
             cropParameter.put("height",height)
-            image = imageService.crop(fileUrl,cropParameter)
+            image = imageService.crop(imageUrl,cropParameter)
             result.put('image',image)
             response.status = 200
         }catch(IOException io){
@@ -38,12 +43,16 @@ class ImageController {
 
     def thumbnailImage(){
         def result = [:] as Map
-        def fileUrl = params.url as String
+        def imageUrl = params.url as String
         def height = params.height as Long
         def width = params.width as Long
         def image
         try {
-            image = imageService.thumbnail(fileUrl,height,width)
+            if(!utilService.isUrlValid(imageUrl)){
+                result.put("message","File url is not valid.Please check it.")
+                return
+            }
+            image = imageService.thumbnail(imageUrl,height,width)
             result.put('image',image)
             response.status = 200
         }catch(Exception ex){
@@ -52,6 +61,5 @@ class ImageController {
         }finally{
             render result as JSON
         }
-
     }
 }
