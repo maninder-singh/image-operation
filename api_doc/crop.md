@@ -1,7 +1,7 @@
 
 **Crop Image**
 ----
-Return a cropped version of original image.
+Returns a cropped version of original image.
 
 * **URL**
 
@@ -50,7 +50,7 @@ Return a cropped version of original image.
 * **Success Response:**
 
   * **Code:** 200 <br />
-    **Content:** `{ image : encoded data uri of image }`
+    **Content:** `{ image : encoded data uri of cropped image }`
  
 * **Error Response:**
 
