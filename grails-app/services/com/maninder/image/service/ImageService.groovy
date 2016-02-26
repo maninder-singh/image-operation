@@ -60,26 +60,26 @@ class ImageService {
     }
     private BufferedImage cropImage(def imageData,def cropParameter){
         def croppedImage
-        def x = cropParameter.get('x').intValue() // the X coordinate of the upper-left corner of the specified rectangular region
-        def y = cropParameter.get('y').intValue() // the Y coordinate of the upper-left corner of the specified rectangular region
-        def width = cropParameter.get('width').intValue() // the width of the specified rectangular region
-        def height = cropParameter.get('height').intValue() // the height of the specified rectangular region
+        def x = cropParameter.get('x') // the X coordinate of the upper-left corner of the specified rectangular region
+        def y = cropParameter.get('y') // the Y coordinate of the upper-left corner of the specified rectangular region
+        def width = cropParameter.get('width') // the width of the specified rectangular region
+        def height = cropParameter.get('height') // the height of the specified rectangular region
 
         try {
             // check if x coordinate of upper left corner is null
-            if (!x) {
+            if (utilService.checkNull(x)) {
                 x = 0
             }
             // check if y coordinate of upper left corner is null
-            if (!y) {
+            if (utilService.checkNull(y)) {
                 y = 0
             }
             //check if width is null
-            if (!width) {
+            if (utilService.checkNull(width)) {
                 width = imageData.width
             }
             //check if height of crop image is greater than original image height
-            if (!height) {
+            if (utilService.checkNull(height)) {
                 height = imageData.height
             }
             // check if crop image height is greater than original image height
@@ -90,7 +90,7 @@ class ImageService {
             if((x + width) > imageData.width){
                 width = imageData.width - x
             }
-            croppedImage = imageData.getSubimage(x, y, width, height)
+            croppedImage = imageData.getSubimage(x.intValue(), y.intValue(), width.intValue(), height.intValue())
             croppedImage
         }catch(IOException io){
             throw new IOException(io)
@@ -232,5 +232,4 @@ class ImageService {
         data[8] = 0.0625f
         data
     }
-
 }

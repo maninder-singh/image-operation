@@ -20,6 +20,7 @@ class ImageController {
 
         try{
             if(!utilService.isUrlValid(imageUrl)){
+                response.status = 500
                 result.put("message","File url is not valid.Please check it.")
                 return
             }
@@ -35,7 +36,7 @@ class ImageController {
             result.put('message',io.getMessage())
         }catch(Exception ex){
             response.status = 500
-            result.put('message','Error occur while image')
+            result.put('message','Error occur while cropping image')
         }finally{
             render result as JSON
         }
