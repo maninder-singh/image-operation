@@ -20,7 +20,7 @@ Return a cropped version of original image.
    Description - url of image
    ```
    
-   **Optional**
+   **Optional:**
    
    ```
    x=[Int] 
