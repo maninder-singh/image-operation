@@ -15,20 +15,62 @@ class ImageService {
     private static final String BASE64_ENCODED = 'data:image/png;base64,'
     private static final int DEFAULT_THUMBNAIL_HEIGHT_FACTOR = 10
     private static final int DEFAULT_THUMBNAIL_WIDTH_FACTOR = 10
+    private static final String BLUR = 'blur'
+    private static final String IDENTICAL = 'identical'
 
-
+    /**
+     * Return a cropped version of original image
+     *
+     * @param imageUrl: image data url
+     * @param cropParameter: cropping parameter ( x,y,height,width)
+     * @return String
+     * @throws IOException
+     * @throws Exception
+     */
     def String crop(def imageUrl,def cropParameter) throws IOException,Exception{
         def imageData = getImageByUrl(imageUrl)
         imageData = cropImage(imageData,cropParameter)
         getImageDataUrl(imageData)
     }
 
+    /**
+     *  Return a thumbnail image of original image
+     *
+     * @param imageUrl: image data url
+     * @param height: thumbnail image height
+     * @param width: thumbnail image width
+     * @return String
+     * @throws IllegalArgumentException
+     * @throws IOException
+     * @throws Exception
+     */
     def thumbnail(def imageUrl,def height,def width) throws IllegalArgumentException,IOException,Exception{
         def imageData = getImageByUrl(imageUrl)
         imageData = thumbnailImage(imageData,height,width)
         getImageDataUrl(imageData)
     }
 
+    /**
+     * Return a blur image of original image
+     *
+     * @param imageUrl: image url
+     * @return String
+     * @throws IllegalArgumentException
+     * @throws IOException
+     * @throws Exception
+     */
+    def blur(def imageUrl) throws IllegalArgumentException,IOException,Exception{
+        def imageData = getImageByUrl(imageUrl)
+        imageData = rescaleImage(imageData,imageData.width,imageData.height,BLUR)
+        getImageDataUrl(imageData)
+    }
+
+    /**
+     * Return image as data uri( image/png)
+     *
+     * @param imageData: buffered image data
+     * @return String
+     */
     private String getImageDataUrl(def imageData){
         def baos = new ByteArrayOutputStream()
         try {
@@ -46,18 +88,47 @@ class ImageService {
         }
     }
 
+    /**
+     * Return a encoded image data
+     *
+     * @param imageData: buffered image data
+     * @return: String
+     */
     private String getEncodedImage(def imageData){
         def encoder = new BASE64Encoder()
         encoder.encode(imageData)
     }
 
+    /**
+     * Save a image data to output file object
+     *
+     * @param imageData: buffered image data
+     * @param image: output file object
+     * @return void
+     */
     private void saveImage(def imageData,def image){
         ImageIO.write(imageData,'png',image)
     }
 
+    /**
+     * Read a image from url
+     *
+     * @param image: image as either URL or File object
+     * @return BufferedImage
+     * @throws IOException
+     * @throws Exception
+     */
     private BufferedImage readImage(def image) throws IOException,Exception{
         ImageIO.read(image)
     }
+
+    /**
+     *  Cropping of an image
+     *
+     * @param imageData: image data
+     * @param cropParameter: crop parameters
+     * @return BufferedImage
+     */
     private BufferedImage cropImage(def imageData,def cropParameter){
         def croppedImage
         def x = cropParameter.get('x') // the X coordinate of the upper-left corner of the specified rectangular region
@@ -103,6 +174,12 @@ class ImageService {
         }
     }
 
+    /**
+     * Return a image data as binary form after reading image url
+     *
+     * @param imageUrl: url of image file
+     * @return BufferedImage
+     */
     private BufferedImage getImageByUrl(def imageUrl){
         def imageData = null
 
@@ -118,6 +195,14 @@ class ImageService {
         }
     }
 
+    /**
+     * Generate a thumbnail image from original image
+     *
+     * @param imageData: original image data
+     * @param height: thumbnail image height
+     * @param width: thumbnail image width
+     * @return BufferedImage
+     */
     private BufferedImage thumbnailImage(def imageData,def height,def width){
         def thumbnailHeight
         def thumbnailWidth
@@ -137,7 +222,7 @@ class ImageService {
                 }else if(scale < hScale){
                     thumbnailHeight = Math.round(scale * imageData.height)
                 }
-                rescaleImage(imageData,thumbnailWidth as int, thumbnailHeight as int)
+                rescaleImage(imageData,thumbnailWidth as int, thumbnailHeight as int,IDENTICAL)
             }
         }catch(IllegalArgumentException ia){
             throw new IllegalArgumentException(ia)
@@ -158,11 +243,11 @@ class ImageService {
      * @param image: thumbnail image bytes
      * @param imageWidth: rescale image width
      * @param imageHeight: rescale image height
-     * @return rescale image bytes
+     * @return BufferedImage
      */
-    def BufferedImage rescaleImage(BufferedImage image, int rescaleWidth, int rescaleHeight) {
+    def BufferedImage rescaleImage(BufferedImage image, int rescaleWidth, int rescaleHeight,def kernelType) {
         BufferedImage originalImage = new BufferedImage(image.width, image.height, image.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : image.getType());
-        Kernel kernel = getKernelObject()
+        Kernel kernel = getKernelObject(kernelType)
         setConvolveOp(kernel,image,originalImage)
         // Make a scaled image
         BufferedImage rescaleImage = new BufferedImage(rescaleWidth, rescaleHeight, image.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : image.getType());
@@ -178,6 +263,7 @@ class ImageService {
      * @param kernel
      * @param originalImage
      * @param scaledImage
+     * @return void
      */
     private void setConvolveOp(Kernel kernel,def originalImage,def scaledImage){
         ConvolveOp convolve = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP,null);
@@ -207,19 +293,42 @@ class ImageService {
      * Return matrix that describes how a specified pixel and its
      * surrounding pixels affect the value computed for the pixel's position in the output image
      *
-     * @return kernel object
+     * @return Kernel
      */
-    private Kernel getKernelObject(){
+    private Kernel getKernelObject(def kernelType){
+        if(kernelType.equals(BLUR)){
+            return new Kernel(3,3,getKernelDataForBlur())
+        }
         return new Kernel(3, 3, getKernelData())
     }
 
     /**
-     * Return the kernel data in row major order
+     * Return the kernel data in row major order for original image
      * For Reference: Static data for sharpening of the pixel in image
      *
-     * @return kernel data
+     * @return Float[]
      */
     private Float[] getKernelData(){
+        def data = new Float[9]
+        data[0] = 0.0f
+        data[1] = 0.0f
+        data[2] = 0.0f
+        data[3] = 0.0f
+        data[4] = 1.0f
+        data[5] = 0.0f
+        data[6] = 0.0f
+        data[7] = 0.0f
+        data[8] = 0.0f
+        data
+    }
+
+    /**
+     * Return the kernel data in row major order for blur image
+     * For Reference: Static data for sharpening of the pixel in image
+     *
+     * @return Float[]
+     */
+    private Float[] getKernelDataForBlur(){
         def data = new Float[9]
         data[0] = 0.0625f
         data[1] = 0.125f

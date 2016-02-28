@@ -13,6 +13,12 @@ class UrlMappings {
             ]
         }
 
+        "/images/blur"(controller: "image",parseRequest: true){
+            action = [
+                    GET: "blurImage"
+            ]
+        }
+
         "/"(view:"/index")
         "500"(view:'/error')
 	}
