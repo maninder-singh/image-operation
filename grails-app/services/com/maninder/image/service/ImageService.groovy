@@ -15,6 +15,8 @@ class ImageService {
     private static final String BASE64_ENCODED = 'data:image/png;base64,'
     private static final int DEFAULT_THUMBNAIL_HEIGHT_FACTOR = 10
     private static final int DEFAULT_THUMBNAIL_WIDTH_FACTOR = 10
+    private static final String BLUR = 'blur'
+    private static final String IDENTICAL = 'identical'
 
 
     def String crop(def imageUrl,def cropParameter) throws IOException,Exception{
@@ -26,6 +28,12 @@ class ImageService {
     def thumbnail(def imageUrl,def height,def width) throws IllegalArgumentException,IOException,Exception{
         def imageData = getImageByUrl(imageUrl)
         imageData = thumbnailImage(imageData,height,width)
+        getImageDataUrl(imageData)
+    }
+
+    def blur(def imageUrl) throws IllegalArgumentException,IOException,Exception{
+        def imageData = getImageByUrl(imageUrl)
+        imageData = rescaleImage(imageData,imageData.width,imageData.height,BLUR)
         getImageDataUrl(imageData)
     }
 
@@ -137,7 +145,7 @@ class ImageService {
                 }else if(scale < hScale){
                     thumbnailHeight = Math.round(scale * imageData.height)
                 }
-                rescaleImage(imageData,thumbnailWidth as int, thumbnailHeight as int)
+                rescaleImage(imageData,thumbnailWidth as int, thumbnailHeight as int,IDENTICAL)
             }
         }catch(IllegalArgumentException ia){
             throw new IllegalArgumentException(ia)
@@ -160,9 +168,9 @@ class ImageService {
      * @param imageHeight: rescale image height
      * @return rescale image bytes
      */
-    def BufferedImage rescaleImage(BufferedImage image, int rescaleWidth, int rescaleHeight) {
+    def BufferedImage rescaleImage(BufferedImage image, int rescaleWidth, int rescaleHeight,def kernelType) {
         BufferedImage originalImage = new BufferedImage(image.width, image.height, image.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : image.getType());
-        Kernel kernel = getKernelObject()
+        Kernel kernel = getKernelObject(kernelType)
         setConvolveOp(kernel,image,originalImage)
         // Make a scaled image
         BufferedImage rescaleImage = new BufferedImage(rescaleWidth, rescaleHeight, image.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : image.getType());
@@ -209,7 +217,10 @@ class ImageService {
      *
      * @return kernel object
      */
-    private Kernel getKernelObject(){
+    private Kernel getKernelObject(def kernelType){
+        if(kernelType.equals(BLUR)){
+            return new Kernel(3,3,getKernelDataForBlur())
+        }
         return new Kernel(3, 3, getKernelData())
     }
 
@@ -220,6 +231,20 @@ class ImageService {
      * @return kernel data
      */
     private Float[] getKernelData(){
+        def data = new Float[9]
+        data[0] = 0.0f
+        data[1] = 0.0f
+        data[2] = 0.0f
+        data[3] = 0.0f
+        data[4] = 1.0f
+        data[5] = 0.0f
+        data[6] = 0.0f
+        data[7] = 0.0f
+        data[8] = 0.0f
+        data
+    }
+
+    private Float[] getKernelDataForBlur(){
         def data = new Float[9]
         data[0] = 0.0625f
         data[1] = 0.125f

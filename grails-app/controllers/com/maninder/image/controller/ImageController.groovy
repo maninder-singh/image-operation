@@ -63,4 +63,20 @@ class ImageController {
             render result as JSON
         }
     }
+
+    def blurImage(){
+        def result = [:] as Map
+        def imageUrl = params.url as String
+        def image
+        try {
+            image = imageService.blur(imageUrl)
+            result.put("image",image)
+            response.status = 200
+        }catch(Exception ex){
+            result.put("message",'Error occure while generating blur image')
+            response.status = 500
+        }finally{
+            render result as JSON
+        }
+    }
 }
