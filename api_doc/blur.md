@@ -44,7 +44,7 @@ Returns a blur version of original image.
 
   ```javascript
     $.ajax({
-      url: "/images/blur?url=http://a10.gaanacdn.com/images/radio_rect_mirchi/2.jpg,
+      url: "/images/blur?url=http://a10.gaanacdn.com/images/radio_rect_mirchi/2.jpg",
       dataType: "json",
       contentType: "application/json",
       type : "GET",
